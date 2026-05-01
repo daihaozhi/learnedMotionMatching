@@ -31,6 +31,11 @@ checkpoints_cd/
 checkpoints/
 *.pt
 *.pth
+*.onnx
+onnx_models/
+
+# Local folders not intended for GitHub
+lab2/
+logs/
 
 # Generated features and reports (reproducible from scripts)
-
