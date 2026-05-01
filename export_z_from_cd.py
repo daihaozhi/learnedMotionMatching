@@ -93,7 +93,13 @@ def main() -> None:
     x = arr["X"].astype(np.float32)
     y = arr["Y"].astype(np.float32)
 
-    ckpt = torch.load(args.cd_checkpoint, map_location=device)
+    # PyTorch >=2.6 defaults to weights_only=True, which can fail when checkpoint
+    # contains non-tensor python objects (e.g. pathlib.Path in args).
+    try:
+        ckpt = torch.load(args.cd_checkpoint, map_location=device, weights_only=False)
+    except TypeError:
+        # Backward compatibility for older torch versions without weights_only arg.
+        ckpt = torch.load(args.cd_checkpoint, map_location=device)
     y_layout = ckpt["y_layout"]
     parents = ckpt["parents"]
     z_dim = int(ckpt["z_dim"])
