@@ -24,6 +24,12 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         default=ROOT_DIR / "checkpoints_p",
     )
+    p.add_argument(
+        "--resume",
+        type=Path,
+        default=None,
+        help="Optional projector checkpoint path to resume training.",
+    )
     p.add_argument("--batch-size", type=int, default=32)
     p.add_argument("--lr", type=float, default=1e-3)
     p.add_argument("--max-steps", type=int, default=50000)
@@ -83,9 +89,27 @@ def main() -> None:
 
     pnet = Projector(x_dim=x_dim, z_dim=z_dim).to(device)
     opt = torch.optim.RAdam(pnet.parameters(), lr=args.lr)
+    start_step = 0
+
+    if args.resume is not None:
+        try:
+            ckpt = torch.load(args.resume, map_location=device, weights_only=False)
+        except TypeError:
+            ckpt = torch.load(args.resume, map_location=device)
+        ckpt_x_dim = int(ckpt["x_dim"])
+        ckpt_z_dim = int(ckpt["z_dim"])
+        if ckpt_x_dim != x_dim or ckpt_z_dim != z_dim:
+            raise RuntimeError(
+                f"Resume checkpoint dims mismatch: ckpt=({ckpt_x_dim},{ckpt_z_dim}) vs data=({x_dim},{z_dim})"
+            )
+        pnet.load_state_dict(ckpt["projector_state"])
+        if "optimizer_state" in ckpt:
+            opt.load_state_dict(ckpt["optimizer_state"])
+        start_step = int(ckpt.get("step", 0))
+        print(f"Resumed from: {args.resume} at step={start_step}")
 
     args.save_dir.mkdir(parents=True, exist_ok=True)
-    it = 0
+    it = start_step
     running = {"total": 0.0, "x_val": 0.0, "z_val": 0.0, "dist": 0.0}
 
     while it < args.max_steps:
