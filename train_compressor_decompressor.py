@@ -188,17 +188,26 @@ def fk_batch(
     local_pos: torch.Tensor, local_quat: torch.Tensor, parents: list[int]
 ) -> tuple[torch.Tensor, torch.Tensor]:
     # local_pos: [B,J,3], local_quat: [B,J,4]
-    bsz, joints, _ = local_pos.shape
-    gpos = torch.zeros_like(local_pos)
-    gquat = torch.zeros_like(local_quat)
+    # Important: avoid in-place writes on view-based tensors to keep autograd safe.
+    _, joints, _ = local_pos.shape
+    gpos_list: list[torch.Tensor] = []
+    gquat_list: list[torch.Tensor] = []
+
     for j in range(joints):
         p = parents[j]
         if p < 0:
-            gquat[:, j] = quat_norm(local_quat[:, j])
-            gpos[:, j] = local_pos[:, j]
+            gq = quat_norm(local_quat[:, j])
+            gp = local_pos[:, j]
         else:
-            gquat[:, j] = quat_norm(quat_mul(gquat[:, p], local_quat[:, j]))
-            gpos[:, j] = gpos[:, p] + quat_rotate(gquat[:, p], local_pos[:, j])
+            parent_q = gquat_list[p]
+            parent_p = gpos_list[p]
+            gq = quat_norm(quat_mul(parent_q, local_quat[:, j]))
+            gp = parent_p + quat_rotate(parent_q, local_pos[:, j])
+        gquat_list.append(gq)
+        gpos_list.append(gp)
+
+    gpos = torch.stack(gpos_list, dim=1)
+    gquat = torch.stack(gquat_list, dim=1)
     return gpos, gquat
 
 
