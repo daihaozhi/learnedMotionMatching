@@ -106,11 +106,13 @@ def resolve_ref_bvh(meta: dict[str, Any], bvh_ref_arg: Path | None) -> Path:
 
     files = meta.get("files", [])
     if files:
-        p0 = Path(files[0])
+        raw0 = str(files[0])
+        p0 = Path(raw0)
         if p0.exists():
             return p0
 
-        base = p0.name
+        # Important: meta may contain Windows-style paths on Linux.
+        base = raw0.replace("\\", "/").split("/")[-1]
         candidates = [
             ROOT_DIR / "motion_material" / "kinematic_motion_normalized" / base,
             ROOT_DIR / "motion_material" / "kinematic_motion" / base,
@@ -134,6 +136,20 @@ def resolve_ref_bvh(meta: dict[str, Any], bvh_ref_arg: Path | None) -> Path:
                     if token in str(f).replace("\\", "/").lower():
                         return f
             return found_sorted[0]
+
+    # Final fallback: pick any bvh in repo with deterministic priority.
+    any_bvh = sorted(ROOT_DIR.rglob("*.bvh"), key=lambda p: str(p).lower())
+    if any_bvh:
+        preferred_tokens = [
+            "kinematic_motion_normalized",
+            "kinematic_motion",
+            "physics_motion",
+        ]
+        for token in preferred_tokens:
+            for f in any_bvh:
+                if token in str(f).replace("\\", "/").lower():
+                    return f
+        return any_bvh[0]
 
     raise FileNotFoundError(
         "Cannot resolve reference BVH. Provide --bvh-ref explicitly, "
