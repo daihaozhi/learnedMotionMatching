@@ -81,3 +81,65 @@ class Decompressor(nn.Module):
 
     def forward(self, x: torch.Tensor, z: torch.Tensor) -> torch.Tensor:
         return self.mlp(torch.cat([x, z], dim=-1))
+
+
+class Stepper(nn.Module):
+    """
+    Stepper S: [X_t, Z_t] -> [dX, dZ]
+    Paper-like default: 4 layers, 512 hidden, ReLU.
+    """
+
+    def __init__(
+        self,
+        x_dim: int,
+        z_dim: int = 32,
+        hidden_dim: int = 512,
+        num_layers: int = 4,
+    ) -> None:
+        super().__init__()
+        self.x_dim = x_dim
+        self.z_dim = z_dim
+        self.mlp = MLP(
+            in_dim=x_dim + z_dim,
+            out_dim=x_dim + z_dim,
+            hidden_dim=hidden_dim,
+            num_layers=num_layers,
+            activation="relu",
+        )
+
+    def forward(self, x: torch.Tensor, z: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+        d = self.mlp(torch.cat([x, z], dim=-1))
+        dx = d[..., : self.x_dim]
+        dz = d[..., self.x_dim :]
+        return dx, dz
+
+
+class Projector(nn.Module):
+    """
+    Projector P: X_query -> [X_proj, Z_proj]
+    Paper-like default: 6 layers, 512 hidden, ReLU.
+    """
+
+    def __init__(
+        self,
+        x_dim: int,
+        z_dim: int = 32,
+        hidden_dim: int = 512,
+        num_layers: int = 6,
+    ) -> None:
+        super().__init__()
+        self.x_dim = x_dim
+        self.z_dim = z_dim
+        self.mlp = MLP(
+            in_dim=x_dim,
+            out_dim=x_dim + z_dim,
+            hidden_dim=hidden_dim,
+            num_layers=num_layers,
+            activation="relu",
+        )
+
+    def forward(self, x_query: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+        out = self.mlp(x_query)
+        x_proj = out[..., : self.x_dim]
+        z_proj = out[..., self.x_dim :]
+        return x_proj, z_proj
