@@ -121,8 +121,19 @@ def resolve_ref_bvh(meta: dict[str, Any], bvh_ref_arg: Path | None) -> Path:
                 return c
 
         found = list(ROOT_DIR.rglob(base))
-        if len(found) == 1:
-            return found[0]
+        if found:
+            # Deterministic priority for ambiguous same-name BVHs.
+            preferred_tokens = [
+                "kinematic_motion_normalized",
+                "kinematic_motion",
+                "physics_motion",
+            ]
+            found_sorted = sorted(found, key=lambda p: str(p).lower())
+            for token in preferred_tokens:
+                for f in found_sorted:
+                    if token in str(f).replace("\\", "/").lower():
+                        return f
+            return found_sorted[0]
 
     raise FileNotFoundError(
         "Cannot resolve reference BVH. Provide --bvh-ref explicitly, "
