@@ -1,0 +1,36 @@
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Python environments
+.venv/
+venv/
+env/
+.env/
+
+# IDE/editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Logs
+*.log
+
+# Model checkpoints and training outputs
+checkpoints_cd/
+checkpoints/
+*.pt
+*.pth
+
+# Generated features and reports (reproducible from scripts)
+

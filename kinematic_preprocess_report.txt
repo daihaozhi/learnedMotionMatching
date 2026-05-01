@@ -1,0 +1,25 @@
+DATA_DIR: d:\learnedMotionMatching\motion_material\kinematic_motion
+STANDARD_FILE: long_run.bvh
+FILE_COUNT: 4
+
+== Coordinate/Schema Check ==
+All files have consistent root channels and frame time.
+
+== Root Anomaly Check ==
+Rule: mark frame if planar speed > median + 6*MAD OR > 10 m/s (hard cap).
+long_run.bvh: median_speed=2.040 m/s, mad=0.617, threshold=10.000, anomaly_frames=0
+  anomaly_ranges: none
+long_run_mirror.bvh: median_speed=2.040 m/s, mad=0.617, threshold=10.000, anomaly_frames=0
+  anomaly_ranges: none
+long_walk.bvh: median_speed=1.170 m/s, mad=0.344, threshold=10.000, anomaly_frames=0
+  anomaly_ranges: none
+long_walk_mirror.bvh: median_speed=1.170 m/s, mad=0.344, threshold=10.000, anomaly_frames=0
+  anomaly_ranges: none
+
+== Root Normalization ==
+Operation: set first-frame root to origin; remove initial yaw from root translation and Y-rotation.
+Output dir: d:\learnedMotionMatching\motion_material\kinematic_motion_normalized
+normalized: long_run.bvh -> d:\learnedMotionMatching\motion_material\kinematic_motion_normalized\long_run.bvh
+normalized: long_run_mirror.bvh -> d:\learnedMotionMatching\motion_material\kinematic_motion_normalized\long_run_mirror.bvh
+normalized: long_walk.bvh -> d:\learnedMotionMatching\motion_material\kinematic_motion_normalized\long_walk.bvh
+normalized: long_walk_mirror.bvh -> d:\learnedMotionMatching\motion_material\kinematic_motion_normalized\long_walk_mirror.bvh

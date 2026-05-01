@@ -1,0 +1,39 @@
+STANDARD: d:\learnedMotionMatching\motion_material\run_forward.bvh
+TOTAL_BVH: 14
+MISMATCH_COUNT: 9
+
+FILE: d:\learnedMotionMatching\motion_material\idle.bvh
+ - joint_order/name mismatch at idx 1: lHip != pelvis_lowerback
+ - channels mismatch at idx 4 (lToeJoint): ['Xrotation', 'Yrotation', 'Zrotation'] != []
+
+FILE: d:\learnedMotionMatching\motion_material\kinematic_motion\long_run.bvh
+ - joint_order/name mismatch at idx 1: lHip != pelvis_lowerback
+ - channels mismatch at idx 4 (lToeJoint): ['Xrotation', 'Yrotation', 'Zrotation'] != []
+
+FILE: d:\learnedMotionMatching\motion_material\kinematic_motion\long_run_mirror.bvh
+ - joint_order/name mismatch at idx 1: lHip != pelvis_lowerback
+ - channels mismatch at idx 4 (lToeJoint): ['Xrotation', 'Yrotation', 'Zrotation'] != []
+
+FILE: d:\learnedMotionMatching\motion_material\kinematic_motion\long_walk.bvh
+ - joint_order/name mismatch at idx 1: lHip != pelvis_lowerback
+ - channels mismatch at idx 4 (lToeJoint): ['Xrotation', 'Yrotation', 'Zrotation'] != []
+
+FILE: d:\learnedMotionMatching\motion_material\kinematic_motion\long_walk_mirror.bvh
+ - joint_order/name mismatch at idx 1: lHip != pelvis_lowerback
+ - channels mismatch at idx 4 (lToeJoint): ['Xrotation', 'Yrotation', 'Zrotation'] != []
+
+FILE: d:\learnedMotionMatching\motion_material\walk_and_ture_right.bvh
+ - joint_order/name mismatch at idx 1: lHip != pelvis_lowerback
+ - channels mismatch at idx 4 (lToeJoint): ['Xrotation', 'Yrotation', 'Zrotation'] != []
+
+FILE: d:\learnedMotionMatching\motion_material\walk_and_turn_left.bvh
+ - joint_order/name mismatch at idx 1: lHip != pelvis_lowerback
+ - channels mismatch at idx 4 (lToeJoint): ['Xrotation', 'Yrotation', 'Zrotation'] != []
+
+FILE: d:\learnedMotionMatching\motion_material\walk_forward.bvh
+ - joint_order/name mismatch at idx 1: lHip != pelvis_lowerback
+ - channels mismatch at idx 4 (lToeJoint): ['Xrotation', 'Yrotation', 'Zrotation'] != []
+
+FILE: d:\learnedMotionMatching\motion_material\walkF.bvh
+ - joint_order/name mismatch at idx 1: lHip != pelvis_lowerback
+ - channels mismatch at idx 4 (lToeJoint): ['Xrotation', 'Yrotation', 'Zrotation'] != []

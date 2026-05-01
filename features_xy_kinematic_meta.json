@@ -1,0 +1,132 @@
+{
+  "source_dir": "d:\\learnedMotionMatching\\motion_material\\kinematic_motion_normalized",
+  "files": [
+    "d:\\learnedMotionMatching\\motion_material\\kinematic_motion_normalized\\long_run.bvh",
+    "d:\\learnedMotionMatching\\motion_material\\kinematic_motion_normalized\\long_run_mirror.bvh",
+    "d:\\learnedMotionMatching\\motion_material\\kinematic_motion_normalized\\long_walk.bvh",
+    "d:\\learnedMotionMatching\\motion_material\\kinematic_motion_normalized\\long_walk_mirror.bvh"
+  ],
+  "frame_time": 0.016667,
+  "total_frames": 59896,
+  "X_dim": 27,
+  "Y_dim": 266,
+  "joints": [
+    "RootJoint",
+    "lHip",
+    "lKnee",
+    "lAnkle",
+    "lToeJoint",
+    "rHip",
+    "rKnee",
+    "rAnkle",
+    "rToeJoint",
+    "pelvis_lowerback",
+    "lowerback_torso",
+    "torso_head",
+    "lTorso_Clavicle",
+    "lShoulder",
+    "lElbow",
+    "lWrist",
+    "rTorso_Clavicle",
+    "rShoulder",
+    "rElbow",
+    "rWrist"
+  ],
+  "foot_joints": [
+    "lAnkle",
+    "rAnkle"
+  ],
+  "horizons": [
+    20,
+    40,
+    60
+  ],
+  "clip_ranges": [
+    {
+      "start": 0,
+      "end": 14268,
+      "file": "long_run.bvh"
+    },
+    {
+      "start": 14269,
+      "end": 28537,
+      "file": "long_run_mirror.bvh"
+    },
+    {
+      "start": 28538,
+      "end": 44216,
+      "file": "long_walk.bvh"
+    },
+    {
+      "start": 44217,
+      "end": 59895,
+      "file": "long_walk_mirror.bvh"
+    }
+  ],
+  "X_layout": [
+    "traj_pos_t+20(x,z)",
+    "traj_pos_t+40(x,z)",
+    "traj_pos_t+60(x,z)",
+    "traj_dir_t+20(x,z)",
+    "traj_dir_t+40(x,z)",
+    "traj_dir_t+60(x,z)",
+    "lAnkle_pos_local(x,y,z)",
+    "rAnkle_pos_local(x,y,z)",
+    "lAnkle_vel_local(x,y,z)",
+    "rAnkle_vel_local(x,y,z)",
+    "hip_vel_local(x,y,z) [implemented as root vel]"
+  ],
+  "Y_layout": {
+    "yt_local_pos": [
+      0,
+      60
+    ],
+    "yr_local_quat": [
+      60,
+      140
+    ],
+    "ydt_local_pos_vel": [
+      140,
+      200
+    ],
+    "ydr_local_ang_vel": [
+      200,
+      260
+    ],
+    "root_vel_local": [
+      260,
+      263
+    ],
+    "root_ang_vel_local": [
+      263,
+      266
+    ]
+  },
+  "notes": [
+    "All trajectory/velocity features are local to current root heading (yaw-only).",
+    "Future indices are clamped to clip end.",
+    "Use x_std (and optional x_mean) for normalization in training/runtime."
+  ],
+  "clip_infos": [
+    {
+      "file": "d:\\learnedMotionMatching\\motion_material\\kinematic_motion_normalized\\long_run.bvh",
+      "frames": 14269,
+      "joints": 20
+    },
+    {
+      "file": "d:\\learnedMotionMatching\\motion_material\\kinematic_motion_normalized\\long_run_mirror.bvh",
+      "frames": 14269,
+      "joints": 20
+    },
+    {
+      "file": "d:\\learnedMotionMatching\\motion_material\\kinematic_motion_normalized\\long_walk.bvh",
+      "frames": 15679,
+      "joints": 20
+    },
+    {
+      "file": "d:\\learnedMotionMatching\\motion_material\\kinematic_motion_normalized\\long_walk_mirror.bvh",
+      "frames": 15679,
+      "joints": 20
+    }
+  ]
+}
