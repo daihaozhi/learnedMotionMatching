@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import hashlib
 from pathlib import Path
 from typing import Any
 
@@ -37,14 +38,21 @@ def parse_args() -> argparse.Namespace:
         default=None,
         help="Optional stepper checkpoint path to resume training.",
     )
-    p.add_argument("--window", type=int, default=20, help="s in paper")
-    p.add_argument("--batch-size", type=int, default=32)
-    p.add_argument("--lr", type=float, default=1e-3)
-    p.add_argument("--max-steps", type=int, default=50000)
+    p.add_argument("--window", type=int, default=30, help="rollout window (s in paper)")
+    p.add_argument("--batch-size", type=int, default=64)
+    p.add_argument("--lr", type=float, default=3e-4)
+    p.add_argument("--max-steps", type=int, default=80000)
     p.add_argument("--seed", type=int, default=42)
     p.add_argument("--device", type=str, default="cpu")
     p.add_argument("--log-every", type=int, default=100)
     p.add_argument("--save-every", type=int, default=10000)
+    p.add_argument("--w-x-val", type=float, default=1.0)
+    p.add_argument("--w-z-val", type=float, default=2.0)
+    p.add_argument("--w-x-vel", type=float, default=0.5)
+    p.add_argument("--w-z-vel", type=float, default=1.0)
+    p.add_argument("--grad-clip", type=float, default=0.5)
+    p.add_argument("--lr-decay-every", type=int, default=2000)
+    p.add_argument("--lr-decay-gamma", type=float, default=0.995)
     return p.parse_args()
 
 
@@ -81,6 +89,17 @@ def set_seed(seed: int) -> None:
     torch.manual_seed(seed)
 
 
+def file_sha256(path: Path) -> str:
+    h = hashlib.sha256()
+    with path.open("rb") as f:
+        while True:
+            b = f.read(1024 * 1024)
+            if not b:
+                break
+            h.update(b)
+    return h.hexdigest()
+
+
 def main() -> None:
     args = parse_args()
     set_seed(args.seed)
@@ -90,6 +109,17 @@ def main() -> None:
     arr = np.load(args.features)
     x = arr["X"].astype(np.float32)
     z = arr["Z"].astype(np.float32)
+
+    data_fingerprint = {
+        "features_path": str(args.features.resolve()),
+        "features_sha256": file_sha256(args.features.resolve()),
+        "meta_path": str(args.meta.resolve()),
+        "meta_sha256": file_sha256(args.meta.resolve()),
+        "x_shape": list(x.shape),
+        "z_shape": list(z.shape),
+        "clip_ranges_len": int(len(meta.get("clip_ranges", []))),
+        "clip_ranges_head": meta.get("clip_ranges", [])[:5],
+    }
 
     x_dim = x.shape[1]
     z_dim = z.shape[1]
@@ -155,11 +185,16 @@ def main() -> None:
                 torch.abs((z_pred_t[:, 1:] - z_pred_t[:, :-1]) - (zb[:, 1:] - zb[:, :-1]))
             )
 
-            loss = 1.0 * l_x_val + 1.0 * l_z_val + 0.5 * l_x_vel + 0.5 * l_z_vel
+            loss = (
+                args.w_x_val * l_x_val
+                + args.w_z_val * l_z_val
+                + args.w_x_vel * l_x_vel
+                + args.w_z_vel * l_z_vel
+            )
 
             opt.zero_grad(set_to_none=True)
             loss.backward()
-            torch.nn.utils.clip_grad_norm_(snet.parameters(), max_norm=1.0)
+            torch.nn.utils.clip_grad_norm_(snet.parameters(), max_norm=args.grad_clip)
             opt.step()
 
             it += 1
@@ -169,9 +204,9 @@ def main() -> None:
             running["x_vel"] += float(l_x_vel.item())
             running["z_vel"] += float(l_z_vel.item())
 
-            if it % 1000 == 0:
+            if it % args.lr_decay_every == 0:
                 for g in opt.param_groups:
-                    g["lr"] *= 0.99
+                    g["lr"] *= args.lr_decay_gamma
 
             if it % args.log_every == 0:
                 scale = 1.0 / args.log_every
@@ -187,6 +222,7 @@ def main() -> None:
                 ckpt = {
                     "step": it,
                     "args": vars(args),
+                    "data_fingerprint": data_fingerprint,
                     "x_dim": x_dim,
                     "z_dim": z_dim,
                     "stepper_state": snet.state_dict(),
