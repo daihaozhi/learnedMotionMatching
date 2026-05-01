@@ -17,23 +17,31 @@ except ModuleNotFoundError as exc:
 
 from lmm_cd_models import Compressor, Decompressor
 
+ROOT_DIR = Path(__file__).resolve().parent
+
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Train LMM Compressor+Decompressor")
     p.add_argument(
         "--features",
         type=Path,
-        default=Path(r"d:\learnedMotionMatching\features_xy_kinematic.npz"),
+        default=ROOT_DIR / "features_xy_kinematic.npz",
     )
     p.add_argument(
         "--meta",
         type=Path,
-        default=Path(r"d:\learnedMotionMatching\features_xy_kinematic_meta.json"),
+        default=ROOT_DIR / "features_xy_kinematic_meta.json",
     )
     p.add_argument(
         "--save-dir",
         type=Path,
-        default=Path(r"d:\learnedMotionMatching\checkpoints_cd"),
+        default=ROOT_DIR / "checkpoints_cd",
+    )
+    p.add_argument(
+        "--bvh-ref",
+        type=Path,
+        default=None,
+        help="Optional reference BVH for parsing joint parents (if meta path is not valid).",
     )
     p.add_argument("--z-dim", type=int, default=32)
     p.add_argument("--batch-size", type=int, default=32)
@@ -87,6 +95,39 @@ def parse_bvh_parents(path: Path) -> list[int]:
                 stack.pop()
             continue
     return parents
+
+
+def resolve_ref_bvh(meta: dict[str, Any], bvh_ref_arg: Path | None) -> Path:
+    if bvh_ref_arg is not None:
+        p = bvh_ref_arg.expanduser().resolve()
+        if not p.exists():
+            raise FileNotFoundError(f"--bvh-ref not found: {p}")
+        return p
+
+    files = meta.get("files", [])
+    if files:
+        p0 = Path(files[0])
+        if p0.exists():
+            return p0
+
+        base = p0.name
+        candidates = [
+            ROOT_DIR / "motion_material" / "kinematic_motion_normalized" / base,
+            ROOT_DIR / "motion_material" / "kinematic_motion" / base,
+            ROOT_DIR / "motion_material" / "physics_motion" / base,
+        ]
+        for c in candidates:
+            if c.exists():
+                return c
+
+        found = list(ROOT_DIR.rglob(base))
+        if len(found) == 1:
+            return found[0]
+
+    raise FileNotFoundError(
+        "Cannot resolve reference BVH. Provide --bvh-ref explicitly, "
+        "e.g. --bvh-ref ./motion_material/kinematic_motion_normalized/long_run.bvh"
+    )
 
 
 def quat_mul(a: torch.Tensor, b: torch.Tensor) -> torch.Tensor:
@@ -172,7 +213,7 @@ def main() -> None:
     x_dim = x.shape[1]
     y_dim = y.shape[1]
     joints = len(meta["joints"])
-    parents = parse_bvh_parents(Path(meta["files"][0]))
+    parents = parse_bvh_parents(resolve_ref_bvh(meta, args.bvh_ref))
     if len(parents) != joints:
         raise RuntimeError(f"parents count {len(parents)} != joints {joints}")
 

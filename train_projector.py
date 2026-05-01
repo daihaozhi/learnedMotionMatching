@@ -9,18 +9,20 @@ from torch.utils.data import DataLoader, Dataset
 
 from lmm_cd_models import Projector
 
+ROOT_DIR = Path(__file__).resolve().parent
+
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Train LMM Projector")
     p.add_argument(
         "--features",
         type=Path,
-        default=Path(r"d:\learnedMotionMatching\features_xyz_kinematic.npz"),
+        default=ROOT_DIR / "features_xyz_kinematic.npz",
     )
     p.add_argument(
         "--save-dir",
         type=Path,
-        default=Path(r"d:\learnedMotionMatching\checkpoints_p"),
+        default=ROOT_DIR / "checkpoints_p",
     )
     p.add_argument("--batch-size", type=int, default=32)
     p.add_argument("--lr", type=float, default=1e-3)

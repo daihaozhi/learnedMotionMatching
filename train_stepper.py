@@ -11,23 +11,25 @@ from torch.utils.data import DataLoader, Dataset
 
 from lmm_cd_models import Stepper
 
+ROOT_DIR = Path(__file__).resolve().parent
+
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Train LMM Stepper")
     p.add_argument(
         "--features",
         type=Path,
-        default=Path(r"d:\learnedMotionMatching\features_xyz_kinematic.npz"),
+        default=ROOT_DIR / "features_xyz_kinematic.npz",
     )
     p.add_argument(
         "--meta",
         type=Path,
-        default=Path(r"d:\learnedMotionMatching\features_xy_kinematic_meta.json"),
+        default=ROOT_DIR / "features_xy_kinematic_meta.json",
     )
     p.add_argument(
         "--save-dir",
         type=Path,
-        default=Path(r"d:\learnedMotionMatching\checkpoints_s"),
+        default=ROOT_DIR / "checkpoints_s",
     )
     p.add_argument("--window", type=int, default=20, help="s in paper")
     p.add_argument("--batch-size", type=int, default=32)
